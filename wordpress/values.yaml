@@ -1,19 +1,26 @@
-# Default values for WordPress Helm chart
+# Default values for appliation.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
 
 replicaCount: 1
 
 image:
   repository: wordpress
   pullPolicy: IfNotPresent
-  tag: "php8.3-apache"  # WordPress image tag
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
 
-imagePullSecrets: []  # Use if pulling from a private registry
+imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
 serviceAccount:
+  # Specifies whether a service account should be created
   create: true
+  # Annotations to add to the service account
   annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
   name: ""
 
 podAnnotations: {}
@@ -36,79 +43,48 @@ service:
 ingress:
   enabled: true
   className: "nginx"
-  annotations:
+  annotations: 
     nginx.ingress.kubernetes.io/proxy-body-size: "0"
-    ingress.kubernetes.io/ssl-redirect: "true"
+    ingress.kubernetes.io/ssl-redirect: "false"
     cert-manager.io/cluster-issuer: letsencrypt-prod
     acme.cert-manager.io/http01-edit-in-place: "true"
   hosts:
-    - host: wordpress.oracles.gift
+    - host: argocd-wordpress.oracles.gift
       paths:
         - path: /
           pathType: ImplementationSpecific
   tls:
-   - secretName: wordpress-tls
-     hosts:
-       - wordpress.oracles.gift
+    - secretName: argocd-wordpress-tls
+      hosts:
+        - argocd-wordpress.oracles.gift
 
-resources: {}
-  # You can define resources like limits and requests here:
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+
+
+
+
+
+
+resources: 
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
 
 autoscaling:
-  enabled: false
+  enabled: true
   minReplicas: 1
-  maxReplicas: 10
+  maxReplicas: 100
   targetCPUUtilizationPercentage: 80
-
-persistence:
-  enabled: true
-  storageClass: ""
-  accessModes:
-    - ReadWriteOnce
-  size: 10Gi
-
-mariadb:
-  enabled: true
-  auth:
-    rootPassword: "rootpassword"   # Change this to a secure value
-    username: "wordpress"          # WordPress DB user
-    password: "wordpresspassword"  # WordPress DB password
-    database: "wordpress"          # WordPress DB name
-  primary:
-    persistence:
-      enabled: true
-      storageClass: ""
-      accessModes:
-        - ReadWriteOnce
-      size: 8Gi
-
-env:
-  WORDPRESS_DB_NAME: "wordpress"
-  WORDPRESS_DB_USER: "wordpress"
-  WORDPRESS_DB_PASSWORD: "wordpresspassword"
-  WORDPRESS_DB_HOST: "wordpress-mariadb.wordpress.svc.cluster.local:3306"
-
-affinity: {}
-
-tolerations: []
+  targetMemoryUtilizationPercentage: 80
 
 nodeSelector: {}
 
-# Configuration for external databases if not using internal MariaDB
-externalDatabase:
-  enabled: false
-  host: ""
-  user: ""
-  password: ""
-  database: ""
-  port: 3306
+tolerations: []
 
-# Extra volumes and volume mounts for custom configurations
-extraVolumes: []
-extraVolumeMounts: []
+affinity: {}

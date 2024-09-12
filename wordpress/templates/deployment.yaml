@@ -19,7 +19,7 @@ spec:
       {{- end }}
       labels:
         {{- include "wordpress.labels" . | nindent 8 }}
-        {{- with .Values.podLabels }}
+	{{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
@@ -40,40 +40,24 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
-
-          env:
-            - name: WORDPRESS_DB_NAME
-              value: {{ .Values.env.WORDPRESS_DB_NAME | quote }}
-            - name: WORDPRESS_DB_USER
-              value: {{ .Values.env.WORDPRESS_DB_USER | quote }}
-            - name: WORDPRESS_DB_PASSWORD
-              value: {{ .Values.env.WORDPRESS_DB_PASSWORD | quote }}
-            - name: WORDPRESS_DB_HOST
-              value: {{ .Values.env.WORDPRESS_DB_HOST | quote }}
-
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-          
           {{- with .Values.volumeMounts }}
           volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-      
       {{- with .Values.volumes }}
       volumes:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      
       {{- with .Values.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-
       {{- with .Values.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
